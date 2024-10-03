@@ -9,6 +9,9 @@ pub const OpCode = enum(u8) {
     /// - `p1`(reg): The allocated address
     /// - `p2`(reg): The number of bytes
     Alloca,
+    /// Free bytes on the stack
+    /// - `p1`(reg): Number of bytes to free
+    Freea,
 };
 
 pub fn buildInstruction(code: OpCode,  p1: u8, p2: u8, p3: u8) u32 {

@@ -48,6 +48,9 @@ pub const VM = struct {
                 if (self.stack_off >= self.stack.len) {
                     return error.VM_StackOverflow;
                 }
+            },
+            .Freea => {
+                self.stack -= self.registers[data[1]];
             }
         }
     }
