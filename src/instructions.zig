@@ -12,6 +12,16 @@ pub const OpCode = enum(u8) {
     /// Free bytes on the stack
     /// - `p1`(reg): Number of bytes to free
     Freea,
+    /// Begin an automaitc memory block
+    BBeg,
+    /// End an automatic memory block
+    BEnd,
+    /// Store a value to the stack
+    /// - `p1`(reg): register containing the value
+    Store64,
+    Store32,
+    Store16,
+    Store8
 };
 
 pub fn buildInstruction(code: OpCode,  p1: u8, p2: u8, p3: u8) u32 {

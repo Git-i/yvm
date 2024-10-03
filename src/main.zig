@@ -9,8 +9,6 @@ pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
 
-    var machine = try vm.VM.new(arena.allocator(), 1024 * 1024 * 2);
+    var machine = try vm.VM.init(arena.allocator(), 1024 * 1024 * 2);
     try machine.execute(&opcode);
-    const stdout = std.io.getStdOut().writer();
-    try stdout.print("Hello, {s}!\n", .{"World"});
 }
