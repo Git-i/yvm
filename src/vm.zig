@@ -3,7 +3,8 @@ const Allocator = @import("std").mem.Allocator;
 const ArrayList = @import("std").ArrayList;
 const ExecutionError = error {
     VM_ExecutionTerminated,
-    VM_StackOverflow
+    VM_StackOverflow,
+    VM_PrematureBEnd
 };
 pub const VM = struct {
     registers: [32]u64 = undefined,
@@ -59,9 +60,34 @@ pub const VM = struct {
             },
             .BEnd => {
                 const blocks = self.block_bytes.items;
-                self.stack_off -= blocks[blocks.len - 1];
-                if(blocks.len <= 0) self.block_bytes.pop();
+                if(blocks.len > 0) {
+                    self.stack_off -= self.block_bytes.pop();
+                    return;
+                }
+                return error.VM_PrematureBEnd;
             }
         }
     }
 };
+
+test "test blocks" {
+    const std = @import("std");
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    var vm = try VM.init(arena.allocator(), 1024 * 1024 * 2);
+    defer vm.deinit();
+    var inst = insts.buildInstruction(insts.OpCode.BBeg, 0, 0, 0);
+    try vm.executeInstruction(@ptrCast(&inst));
+
+    inst = insts.buildInstruction(insts.OpCode.Load, 0, 128, 0);
+    try vm.executeInstruction(@ptrCast(&inst));
+    try std.testing.expect(vm.registers[0] == 128);
+
+    inst = insts.buildInstruction(insts.OpCode.Alloca, 1, 0, 0);
+    try vm.executeInstruction(@ptrCast(&inst));
+    try std.testing.expect(vm.stack_off == 128);
+
+    inst = insts.buildInstruction(insts.OpCode.BEnd, 0, 0, 0);
+    try vm.executeInstruction(@ptrCast(&inst));
+    try std.testing.expect(vm.stack_off == 0);
+}
