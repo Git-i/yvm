@@ -1,7 +1,10 @@
 const std = @import("std");
-const inst = @import("vm.zig");
+const vm = @import("vm.zig");
+const insts = @import("instructions.zig");
 pub fn main() !void {
-    const lol = inst.VM.new();
+    const opcode: [1]u32 = .{insts.buildInstruction(insts.OpCode.Load, 0, 10, 0)};
+    var machine = vm.VM.new();
+    try machine.execute(&opcode);
     const stdout = std.io.getStdOut().writer();
     try stdout.print("Hello, {s}!\n", .{"World"});
 }
