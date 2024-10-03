@@ -2,12 +2,12 @@ pub const OpCode = enum(u8) {
     /// Stops Execution
     Halt,
     /// Loads a value to a specified register
-    /// - `p0`: The register number
-    /// - `p1`: The value to load
+    /// - `p1`(reg): The register number
+    /// - `p2`(val): The value to load
     Load,
     /// Allocate bytes on the stack
-    /// - `p0`: The allocated address
-    /// - `p1`: The number of bytes
+    /// - `p1`(reg): The allocated address
+    /// - `p2`(reg): The number of bytes
     Alloca,
 };
 
