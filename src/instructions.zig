@@ -16,14 +16,12 @@ pub const OpCode = enum(u8) {
     BBeg,
     /// End an automatic memory block
     BEnd,
-    //// Store a value to the stack
-    //// - `p1`(reg): register containing the value
-    //Store64,
-    //Store32,
-    //Store16,
-    //Store8
-};
+    /// Store the last N-bits of value to the stack(N must be 64,32,16,or 8)
+    /// - `p1`(reg): the value
+    /// - `p2`(reg): address on the stack
+    StoreN
 
+};
 pub fn buildInstruction(code: OpCode,  p1: u8, p2: u8, p3: u8) u32 {
     var inst:u32 = 0;
     var inst_ptr: *[4]u8 = @ptrCast(&inst);
