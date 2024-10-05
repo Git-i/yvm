@@ -17,6 +17,8 @@ pub const VM = struct {
     pub fn deinit(self: *VM) void {
         self.block_bytes.deinit();
     }
+    /// Execute a stream of instructions with the vm.
+    /// After this is called, the vm's state is bad as it modifies the program counter
     pub fn execute(self: *VM, instructions: []const u32) !void {
         while (self.pc < instructions.len) {
             const decoded: *const [4]u8 = @ptrCast(&instructions[self.pc]);
@@ -29,6 +31,7 @@ pub const VM = struct {
             self.pc += 4;
         }
     }
+    /// Execute a single instruction
     pub fn executeSingle(self: *VM, insruction: u32) !void {
         try self.executeInstruction(@ptrCast(&insruction));
     }
@@ -68,7 +71,41 @@ pub const VM = struct {
             .StoreN => {
                 try self.inst_storen(data[1], data[2], data[3]);
             },
+            .IAdd64 => {
+                @as(*i64, @ptrCast(&self.registers[data[1]])).* =
+                    @as(*i64, @ptrCast(&self.registers[data[2]])).* +
+                    @as(*i64, @ptrCast(&self.registers[data[3]])).*;
+            },
+            .UAdd64 => {
+                self.registers[data[1]] =
+                    self.registers[data[2]] +
+                    self.registers[data[3]];
+            },
+            .FAdd64 => {
+                @as(*f64, @ptrCast(&self.registers[data[1]])).* =
+                    @as(*f64, @ptrCast(&self.registers[data[2]])).* +
+                    @as(*f64, @ptrCast(&self.registers[data[3]])).*;
+            },
+            .IAdd32 => {
+                @as(*i32, @ptrCast(self.reg_32(data[1]))).* =
+                    @as(*i32, @ptrCast(self.reg_32(data[2]))).* +
+                    @as(*i32, @ptrCast(self.reg_32(data[3]))).*;
+            },
+            .UAdd32 => {
+                self.reg_32(data[1]).* =
+                    self.reg_32(data[2]).* +
+                    self.reg_32(data[3]).*;
+            },
+            .FAdd32 => {
+                @as(*f32, @ptrCast(self.reg_32(data[1]))).* =
+                    @as(*f32, @ptrCast(self.reg_32(data[2]))).* +
+                    @as(*f32, @ptrCast(self.reg_32(data[3]))).*;
+            },
+            else => {},
         }
+    }
+    fn reg_32(self: *VM, reg_idx: u8) *u32 {
+        return @ptrFromInt(@intFromPtr(&self.registers[reg_idx]) + 4);
     }
     fn inst_load(self: *VM, reg_idx: u8, value: u16) void {
         self.registers[reg_idx] = value;
